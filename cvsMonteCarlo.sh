@@ -1,12 +1,42 @@
 #!/bin/bash
+PARALLEL_CLASS_PATH=.
+SERIAL_CLASS_PATH=.
 
 TIMES=(1000 10000 100000 100000 1000000 10000000 100000000)
 
+usage (){
+	echo "Usage: $0 [-options] output_file serial_estimator parallel_estimator num_iterations"
+	echo "where options include:" 
+	echo "		-s	<classpath>	set the classpath for the serial estimator"
+	echo "		-p	<classpath>	set the classpath for the parallel estimator"
+	echo
+}
+
+while getopts "s:p:" opt; do
+	case "${opt}" in
+		s) 
+			SERIAL_CLASS_PATH=${OPTARG};;
+		p) 
+			PARALLEL_CLASS_PATH=${OPTARG};;
+    	:)
+      		echo "Option -$OPTARG requires an argument." >&2
+			usage
+      		exit 1
+      		;;
+		?)
+      		echo "Invalid option: -$OPTARG" >&2
+			usage
+      		exit 1
+      		;;
+	esac
+done
+shift $((OPTIND-1))
+
 if (($# < 4))
 then
-	echo $0 output_file serial_estimator parallel_estimator num_iterations
-	exit 1
+	usage
 fi
+
 
 output_file=$1
 serial_estimator=$2
@@ -37,13 +67,13 @@ for ((i = 1; i <= $num_iterations; i++))
 do
 	for t in ${TIMES[@]}
 	do
-		iteration_time=$({ time java $serial_estimator $t >/dev/null;} 2>&1 | grep real | tail -c 7 | head -c 5)
+		iteration_time=$({ time java -classpath $SERIAL_CLASS_PATH $serial_estimator $t 1>/dev/null 2>err.log;} 2>&1 | grep real | tail -c 7 | head -c 5)
 		printf "$iteration_time " >> $output_file
 	done
 
 	for t in ${TIMES[@]}
 	do
-		iteration_time=$({ time java $parallel_estimator $t >/dev/null;} 2>&1 | grep real | tail -c 7 | head -c 5)
+		iteration_time=$({ time java -classpath $PARALLEL_CLASS_PATH $parallel_estimator $t 1>/dev/null 2>err.log;} 2>&1 | grep real | tail -c 7 | head -c 5)
 		printf "$iteration_time " >> $output_file
 	done
 
