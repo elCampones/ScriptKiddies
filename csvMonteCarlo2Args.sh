@@ -61,14 +61,14 @@ write_array(){
     for val in "${arr[@]}"; do
         write_cell "$val"
     done
-    write_eol
+    write_eoc
 }
 
 write_cell(){
     printf "%s%s" "$1" "$OUTPUT_SEPARATOR" >> $OUTPUT_FILE
 }
 
-write_eol(){
+write_eoc(){
     printf "\n">> $OUTPUT_FILE
 }
 
@@ -84,9 +84,9 @@ for ((i = 1; i <= ITERATIONS; i++)); do
 		t=$({ time java -classpath "$SERIAL_CLASSPATH" "$SERIAL_PROGRAM" "$arg1" 1>/dev/null 2>java.log;} 2>&1 | grep real | tail -c 7 | head -c 5)
 		write_cell "$t" #curr result
 	done
-    write_eol
+    write_eoc
 
-	write_eol #offset between serial and parallel tables
+	write_eoc #offset between serial and parallel tables
 
     printf "Parallel %s\n%s" $i "$OUTPUT_SEPARATOR" >> "$OUTPUT_FILE" #table title
     write_array ARGS1 #times
@@ -99,11 +99,11 @@ for ((i = 1; i <= ITERATIONS; i++)); do
 		    t=$({ time java -classpath "$PARALLEL_CLASSPATH" "$PARALLEL_PROGRAM" "$arg1" "$arg2" 1>/dev/null 2>java.log;} 2>&1 | grep real | tail -c 7 | head -c 5)
 		    write_cell "$t" #curr result
         done
-        write_eol
+        write_eoc
 	done
-    write_eol
+    write_eoc
 done
-write_eol
+write_eoc
 
 echo "Done, output(time): $OUTPUT_FILE, log(java): java.log"
 
